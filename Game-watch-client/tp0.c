@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 //TODO DONE
 t_log* iniciar_logger(void)
 {
-	return log_create("log.txt", "tp0", true, LOG_LEVEL_INFO);
+	return log_create("log.log", "tp0", true, LOG_LEVEL_INFO);
 
 }
 

@@ -4,7 +4,9 @@
 !*.*
 # Unignore all dirs
 !*/
+!**/makefile
 
+RemoteSystemsTempFiles/
 .metadata/
 **/.settings/
 **/*.log/
