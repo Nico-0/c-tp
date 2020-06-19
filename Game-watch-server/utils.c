@@ -91,13 +91,24 @@ void process_request(int cod_op, int cliente_fd) {
 void* recibir_mensaje(int socket_cliente, int* size)
 {
 	void * buffer;
+	int result;
 
 	printf("esperando recibir tamanio del mensaje\n");
 	recv(socket_cliente, size, sizeof(int), MSG_WAITALL);
 	printf("se solicito recibir un tamanio de mensaje de: %d\n", *size);
 	buffer = malloc(*size);
-	recv(socket_cliente, buffer, *size, MSG_WAITALL);
+	result = recv(socket_cliente, buffer, *size, MSG_WAITALL);
+	printf("Se recibieron %d bytes de %d\n", result, *size);
+	if(result == -1){
+		printf("Se recibio -1\n");
+		pthread_exit(NULL);
+	}
+	else if(result<*size){
+		printf("Se reciben pocos bytes\n");
+		pthread_exit(NULL);
+	}
 	printf("mensaje recibido: %s\n", (char*)buffer);
+	printf("(Se habian recibido %d bytes de %d)\n", result, *size);
 
 	return buffer;
 }
