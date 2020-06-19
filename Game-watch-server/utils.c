@@ -165,6 +165,7 @@ int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t fl
 	while(current_bytes < bytes){
 
 		result = send(socket, a_enviar + current_bytes, bytes - current_bytes, flag); //El send manda los bytes, no siempre puede asegurar si el otro proceso lo recibio.
+		printf("El send dio: %d\n", result);
 		if(result == -1){
 			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de envio\n");
 			printf("Se desconecto el proceso, hay que volver a accept-connect\n");
@@ -196,6 +197,7 @@ int32_t recv_with_retry(int32_t socket, void* a_recibir, size_t bytes, int32_t f
 										//dice el man que si lo interrumpe una signal, va a recibir menos
 										//asi que lo reintentamos igual
 		result = recv(socket, a_recibir + current_bytes, bytes - current_bytes, flag);
+		printf("El recv dio: %d\n", result);
 		if(result == -1){
 			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de recv\n");
 			printf("Se desconecto el proceso, hay que volver a accept-connect\n");
