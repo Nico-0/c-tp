@@ -6,6 +6,7 @@
  */
 
 #include"utils.h"
+int global = 1;
 
 void iniciar_servidor(void)
 {
@@ -57,7 +58,8 @@ void esperar_cliente(int socket_servidor)
 
 void serve_client(int* socket)
 {
-	printf("cliente conectado, esperando cod_op\n");
+	printf("cliente conectado (%d), esperando cod_op\n", global);
+	global++;
 	int cod_op;
 	if(recv(*socket, &cod_op, sizeof(int), MSG_WAITALL) == -1)
 		cod_op = -1;
