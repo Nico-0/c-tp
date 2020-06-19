@@ -54,5 +54,7 @@ void serve_client(int *socket);
 void* serializar_paquete(t_paquete* paquete, int bytes);
 void devolver_mensaje(void* payload, int size, int socket_cliente);
 
+int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t flag);
+int32_t recv_with_retry(int32_t socket, void* a_recibir, size_t bytes, int32_t flag);
 
 #endif /* CONEXIONES_H_ */

@@ -115,17 +115,17 @@ void recibir_loggear(int socket_servidor){
 	char* buffer;
 	printf("intentando recibir cod_op\n");
 	int cod_op;
-		if(recv(socket_servidor, &cod_op, sizeof(int), MSG_WAITALL) == -1)
+		if(recv_with_retry(socket_servidor, &cod_op, sizeof(int), MSG_WAITALL) == -1)
 		printf("error\n");
 			else
 		printf("se recibio la cod op: %d\n", cod_op);
 
 		int size;
 	printf("esperando recibir tamanio del mensaje\n");
-	recv(socket_servidor, &size, sizeof(int), MSG_WAITALL);
+	recv_with_retry(socket_servidor, &size, sizeof(int), MSG_WAITALL);
 	printf("se solicito recibir un tamanio de mensaje de: %d\n", size);
 	buffer = malloc(size);
-	recv(socket_servidor, buffer, size, MSG_WAITALL);
+	recv_with_retry(socket_servidor, buffer, size, MSG_WAITALL);
 
 
 

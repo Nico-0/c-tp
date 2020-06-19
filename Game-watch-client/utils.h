@@ -39,4 +39,8 @@ char* recibir_mensaje(int socket_cliente);
 void eliminar_paquete(t_paquete* paquete);
 void liberar_conexion(int socket_cliente);
 
+int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t flag);
+int32_t recv_with_retry(int32_t socket, void* a_recibir, size_t bytes, int32_t flag);
+
+
 #endif /* UTILS_H_ */

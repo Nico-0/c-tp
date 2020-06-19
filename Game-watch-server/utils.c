@@ -7,6 +7,7 @@
 
 #include"utils.h"
 int global = 1;
+#define RETRY_WAIT 20
 
 void iniciar_servidor(void)
 {
@@ -94,10 +95,10 @@ void* recibir_mensaje(int socket_cliente, int* size)
 	int result;
 
 	printf("esperando recibir tamanio del mensaje\n");
-	recv(socket_cliente, size, sizeof(int), MSG_WAITALL);
+	recv_with_retry(socket_cliente, size, sizeof(int), MSG_WAITALL);
 	printf("se solicito recibir un tamanio de mensaje de: %d\n", *size);
 	buffer = malloc(*size);
-	result = recv(socket_cliente, buffer, *size, MSG_WAITALL);
+	result = recv_with_retry(socket_cliente, buffer, *size, MSG_WAITALL);
 	printf("Se recibieron %d bytes de %d\n", result, *size);
 	if(result == -1){
 		printf("Se recibio -1\n");
@@ -143,10 +144,10 @@ void devolver_mensaje(void* payload, int size, int socket_cliente)
 	void* a_enviar = serializar_paquete(paquete, bytes);
 
 	printf("Intentando devolver mensaje\n");
-	if(send(socket_cliente, a_enviar, bytes, 0) == -1)
-		printf("Error al enviar\n");
+	if(send_with_retry(socket_cliente, a_enviar, bytes, MSG_NOSIGNAL) == -1)
+		printf("Error al enviar (-1)\n");
 	else
-		printf("Enviado\n");
+		printf("Enviado todos los bytes\n");
 
 	free(a_enviar);
 	free(paquete->buffer->stream);
@@ -154,3 +155,64 @@ void devolver_mensaje(void* payload, int size, int socket_cliente)
 	free(paquete);
 }
 
+int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t flag){
+
+	int32_t result = 0;
+	int32_t current_bytes;
+	int i = 1;
+
+	current_bytes = result;
+	while(current_bytes < bytes){
+
+		result = send(socket, a_enviar + current_bytes, bytes - current_bytes, flag); //El send manda los bytes, no siempre puede asegurar si el otro proceso lo recibio.
+		if(result == -1){
+			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de envio\n");
+			printf("Se desconecto el proceso, hay que volver a accept-connect\n");
+			return -1;
+		}
+		current_bytes += result;
+		if(current_bytes < bytes){
+			printf("Se enviaron %d de %d bytes\n", current_bytes, bytes);
+			printf("Reintentando en %d segundos, por vez %d\n", RETRY_WAIT, i);
+			sleep(RETRY_WAIT);
+			i++;
+		}
+
+	}
+	printf("Se enviaron %d de %d bytes\n", current_bytes, bytes);
+	return current_bytes;
+}
+
+
+
+int32_t recv_with_retry(int32_t socket, void* a_recibir, size_t bytes, int32_t flag){
+
+	int32_t result = 0;
+	int32_t current_bytes;
+	int i = 1;
+
+	current_bytes = result;
+	while(current_bytes < bytes){ 	//en principio el flag MSG_WAITALL se va a quedar esperando a recibir t0do, no hace falta reintentar el recv
+										//dice el man que si lo interrumpe una signal, va a recibir menos
+										//asi que lo reintentamos igual
+		result = recv(socket, a_recibir + current_bytes, bytes - current_bytes, flag);
+		if(result == -1){
+			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de recv\n");
+			printf("Se desconecto el proceso, hay que volver a accept-connect\n");
+			return -1;
+		}
+		current_bytes += result;
+		if(current_bytes < bytes){
+			printf("Se recibieron %d de %d bytes\n", current_bytes, bytes);
+			printf("Reintentando en %d segundos, por vez %d\n", RETRY_WAIT, i);
+			sleep(RETRY_WAIT);
+			i++;
+		}
+
+	}
+	printf("Se recibieron %d de %d bytes\n", current_bytes, bytes);
+	return current_bytes;
+
+
+	return result;
+}
