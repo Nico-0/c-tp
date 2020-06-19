@@ -8,6 +8,7 @@
 #include"utils.h"
 int global = 1;
 #define RETRY_WAIT 20
+#define RETRY_AMOUNT 3
 
 void iniciar_servidor(void)
 {
@@ -159,6 +160,7 @@ int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t fl
 
 	int32_t result = 0;
 	int32_t current_bytes;
+	int retry = RETRY_AMOUNT;
 	int i = 1;
 
 	current_bytes = result;
@@ -170,6 +172,10 @@ int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t fl
 			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de envio\n");
 			printf("Se desconecto el proceso, hay que volver a accept-connect\n");
 			return -1;
+		}
+		if(retry == 0){
+			printf("Se acabaron los reintentos\n");
+			pthread_exit(NULL);
 		}
 		current_bytes += result;
 		if(current_bytes < bytes){
@@ -190,6 +196,7 @@ int32_t recv_with_retry(int32_t socket, void* a_recibir, size_t bytes, int32_t f
 
 	int32_t result = 0;
 	int32_t current_bytes;
+	int retry = RETRY_AMOUNT;
 	int i = 1;
 
 	current_bytes = result;
@@ -202,6 +209,10 @@ int32_t recv_with_retry(int32_t socket, void* a_recibir, size_t bytes, int32_t f
 			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de recv\n");
 			printf("Se desconecto el proceso, hay que volver a accept-connect\n");
 			return -1;
+		}
+		if(retry == 0){
+			printf("Se acabaron los reintentos\n");
+			pthread_exit(NULL);
 		}
 		current_bytes += result;
 		if(current_bytes < bytes){
