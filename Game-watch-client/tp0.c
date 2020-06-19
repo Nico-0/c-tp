@@ -10,6 +10,8 @@
 void* string_to_void(char* string, uint32_t* size);
 char* void_to_string(void* buffer, uint32_t size);
 void* generate_void(uint32_t size);
+char* generate_repeat(int tamano, int* size);
+void recibir_loggear(int socket_servidor);
 
 int main(int argc, char* argv[])
 {
@@ -49,17 +51,53 @@ int main(int argc, char* argv[])
 		enviar_mensaje(mensaje, socket_servidor, strlen(mensaje) + 1);
 	}
 	else if(argc == 2){
-		int tamano = atoi(argv[1]);
-		printf("se va a enviar un mensaje random de tamanio: %d\n", tamano);
+		if(strcmp(argv[1], "loop") == 0){
+			int i = 1;
+			while(1){
 
-		void* data = generate_void(tamano);
-		char* mensaje = void_to_string(data, tamano);
-		free(data);
+				printf("------%d----------se va a enviar en loop un mensaje: %d\n", i, i);
 
-		printf("pre envio\n");
-		enviar_mensaje(mensaje, socket_servidor, tamano + 1);
-		printf("Se envio el mensaje: %s\n", mensaje);
-		free(mensaje);
+				char* mensaje = "Prueba total de conexion 2.0\n";
+				enviar_mensaje(mensaje, socket_servidor, strlen(mensaje) + 1);
+
+
+				recibir_loggear(socket_servidor);
+				i++;
+				sleep(5);
+				socket_servidor = crear_conexion(ip, puerto);
+			}
+		}
+		else{
+			int tamano = atoi(argv[1]);
+			printf("se va a enviar un mensaje repetido la cantidad de veces: %d\n", tamano);
+
+			int* string_size = malloc(sizeof(int));
+			char* mensaje = generate_repeat(tamano, string_size);
+
+			printf("pre envio, string %d bytes\n", *string_size);
+			enviar_mensaje(mensaje, socket_servidor, *string_size + 1);
+			printf("Se envio el mensaje: %s\n", mensaje);
+			free(mensaje);
+		}
+	}
+	else if(argc == 3){
+		if(strcmp(argv[1], "rand") == 0){
+			int tamano = atoi(argv[2]);
+			printf("se va a enviar un mensaje random de tamanio: %d\n", tamano);
+
+			void* data = generate_void(tamano);
+			char* mensaje = void_to_string(data, tamano);
+			free(data);
+
+			printf("pre envio\n");
+			enviar_mensaje(mensaje, socket_servidor, tamano + 1);
+			printf("Se envio el mensaje: %s\n", mensaje);
+			free(mensaje);
+		}
+		else{
+			printf("\nerror de primer argumento\n");
+			exit(1);
+		}
 	}
 	else{
 		printf("\nerror de cantidad de argumentos\n");
@@ -67,6 +105,12 @@ int main(int argc, char* argv[])
 	}
 
 
+	recibir_loggear(socket_servidor);
+
+	terminar_programa(socket_servidor, logger, config);
+}
+
+void recibir_loggear(int socket_servidor){
 	//recibir mensaje
 	char* buffer;
 	printf("intentando recibir cod_op\n");
@@ -89,8 +133,6 @@ int main(int argc, char* argv[])
 	printf("mensaje recibido: %s\n", buffer);
 
 	free(buffer);
-
-	terminar_programa(socket_servidor, logger, config);
 }
 
 //TODO DONE
@@ -143,5 +185,22 @@ void* generate_void(uint32_t size){
 	fread(data, 1, size, random);
 	fclose(random);
 
+	printf("Void generado\n");
 	return data;
 }
+
+char* generate_repeat(int tamano, int* string_size){
+	int i;
+	char* string = string_new();
+	string_append(&string, "start-");
+	for(i=0; i<tamano; i++){
+		string_append(&string, "123-");
+	}
+	string_append(&string, "end");
+	*string_size = strlen(string);
+
+	printf("String generado\n");
+	return string;
+}
+
+

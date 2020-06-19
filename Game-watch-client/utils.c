@@ -48,6 +48,8 @@ void enviar_mensaje(char* mensaje, int socket_cliente, int tamano)
 	ptr_buffer->stream = mensaje;
 	printf("Se cargo el t_buffer\n");
 
+	int bytes = ptr_buffer->size + sizeof(int) + sizeof(int);
+
 	t_paquete *paquete = malloc(sizeof(t_paquete));
 	paquete->codigo_operacion = MENSAJE;
 	paquete->buffer = ptr_buffer;
@@ -63,11 +65,22 @@ void enviar_mensaje(char* mensaje, int socket_cliente, int tamano)
 	offset += sizeof(int);
 	memcpy(a_enviar + offset, paquete->buffer->stream, paquete->buffer->size);
 
+	int result;
 	printf("Intentando enviar\n");
-	if(send(socket_cliente, a_enviar, ptr_buffer->size + sizeof(int) + sizeof(int), 0) == -1)
+	//sleep(100);
+	if((result = send(socket_cliente, a_enviar, bytes, MSG_NOSIGNAL)) == -1){
 		printf("Error al enviar\n");
-	else
+		exit(-1);
+	}
+	else{
+		printf("El send dio %d bytes\n", result);
 		printf("Enviado\n");
+	}
+
+	if(result<bytes){
+		printf("No se reciben suficientes bytes\n");
+		exit(-1);
+	}
 
 	printf("quepasa1\n");
 	free(a_enviar);

@@ -62,6 +62,10 @@ void serve_client(int* socket)
 	if(recv(*socket, &cod_op, sizeof(int), MSG_WAITALL) == -1)
 		cod_op = -1;
 	printf("se recibio la cod op: %d\n", cod_op);
+	if(cod_op != 1){
+		printf("cod_op erronea\n");
+		pthread_exit(NULL);
+	}
 	process_request(cod_op, *socket);
 
 }
